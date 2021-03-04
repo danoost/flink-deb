@@ -1,0 +1,17 @@
+src/
+*.tgz
+*.tar.gz
+*.tar.xz
+*.asc
+*.sha512
+KEYS
+*.build
+*.buildinfo
+*.changes
+*.deb
+.debhelper
+debhelper-build-stamp
+debian/files
+*.log
+*.substvars
+debian/flink-scala*

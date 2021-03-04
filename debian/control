@@ -1,0 +1,16 @@
+Source: flink-scala2.12
+Maintainer: Daniel Oosterwijk <doosterw@waikato.ac.nz>
+Section: java
+Priority: optional
+Standards-Version: 4.5.1.0
+Build-Depends: debhelper (>= 12)
+
+Package: flink-scala2.12
+Architecture: all
+Depends: openjdk-8-jre-headless | java11-runtime-headless
+Provides: flink-scala2.12
+Description: Stateful computations over data streams
+ Apache Flink is a framework and distributed processing engine for stateful 
+ computations over unbounded and bounded data streams. Flink has been designed 
+ to run in all common cluster environments, perform computations at in-memory 
+ speed and at any scale.

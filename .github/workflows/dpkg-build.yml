@@ -1,0 +1,41 @@
+name: Debian Package Build
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: ubuntu:focal
+    env:
+      CHECK_GPG: true
+      DO_STRIP_NONDETERMINISM: true
+      DEBIAN_FRONTEND: noninteractive
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          path: 'repo'
+          
+      - name: Install dependencies
+        run: apt-get -y install dpkg-dev debhelper
+          
+      - name: Build package
+        run: |
+          (cd repo && dpkg-buildpackage --hook-init='debian/rules init' -us -uc -b)
+          mkdir -p packages/any-distro_any-version
+          mv flink-scala*.deb packages/any-distro_any-version/
+        
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: flink-deb
+          path: packages/
+          
+      - name: Publish to Cloudsmith
+        uses: wanduow/action-cloudsmith-upload-packages@v1
+        with:
+          path: packages/
+          repo: ${{ secrets.CLOUDSMITH_OWNER }}/streamevmon
+          username: ${{ secrets.CLOUDSMITH_USERNAME }}
+          api_key: ${{ secrets.CLOUDSMITH_API_KEY }}

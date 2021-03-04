@@ -1,0 +1,58 @@
+#!/usr/bin/make -f
+
+include /usr/share/dpkg/pkg-info.mk
+
+FLINK_VERSION := ${DEB_VERSION_UPSTREAM}
+SCALA_VERSION := $(word 2, $(subst -scala, ,${DEB_SOURCE}))
+FLINK_FILENAME := flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz
+FLINK_UPSTREAM_FILENAME := ${DEB_SOURCE}_${DEB_VERSION}.orig.tar.gz
+FLINK_TGZ_URL := 'https://www.apache.org/dyn/closer.cgi?action=download&filename=flink/flink-${FLINK_VERSION}/${FLINK_FILENAME}'
+FLINK_ASC_URL := https://www.apache.org/dist/flink/flink-${FLINK_VERSION}/${FLINK_FILENAME}.asc
+FLINK_SHA_URL := https://www.apache.org/dist/flink/flink-${FLINK_VERSION}/${FLINK_FILENAME}.sha512
+
+%:
+	dh $@
+
+# dh_install relies on the files we refer to in the debian/install directives,
+# so we need to stage the directory before dpkg-source gets run
+init:
+ifndef SKIP_DOWNLOAD
+	# === Obtain the upstream release ===
+	@echo "Downloading Flink ${FLINK_VERSION} for Scala ${SCALA_VERSION}"
+	curl -fLo ${FLINK_FILENAME} ${FLINK_TGZ_URL}
+ifdef CHECK_GPG
+	curl -fLo flink.tgz.asc ${FLINK_ASC_URL}
+	export GNUPGHOME="$(mktemp -d)"
+	curl -fLo KEYS https://downloads.apache.org/flink/KEYS
+	gpg --import KEYS
+	gpg --verify flink.tgz.asc ${FLINK_FILENAME}
+else
+	curl -fLo flink.tgz.sha512 ${FLINK_SHA_URL}
+	sha512sum --check flink.tgz.sha512
+endif
+	mv ${FLINK_FILENAME} ${FLINK_UPSTREAM_FILENAME}
+endif
+	# === Tidy up from any previous builds ===
+	rm -rf src
+	# === Extract the upstream release ===
+	mkdir -p src/core
+	tar -xf ${FLINK_UPSTREAM_FILENAME} --strip-components=1 -C src/core
+	# === Rearrange files to conform to Debian standards ===
+	# We also make a symlink using dh_link for this redirection
+	mv src/core/conf src/conf
+	# We instead use /var/log/<xyz> depending on the dependent package that includes a systemd unit file
+	rmdir src/core/log
+	# This is a standard license that's included in all Debian systems
+	rm src/core/LICENSE
+	mkdir src/doc
+	mv src/core/NOTICE src/doc/NOTICE
+	mv src/core/README.txt src/doc/README.txt
+	# A lot of these aren't standard licenses - this is an info-level warning in lintian, but we can't get rid of them
+	mv src/core/licenses src/doc/third-party-licenses
+	mv src/core/examples src/examples
+
+# dh_strip_nondeterminism is really really slow, so only do it if it's asked for
+override_dh_strip_nondeterminism:
+ifdef DO_STRIP_NONDETERMINISM
+	dh_strip_nondeterminism
+endif
