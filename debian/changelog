@@ -1,3 +1,9 @@
+flink-scala2.12 (1.13.0-1) unstable; urgency=low
+
+  * Update to Flink 1.13
+
+ -- Daniel Oosterwijk <doosterw@waikato.ac.nz>  Fri,  12 Feb 2021 10:49:07 +1300
+
 flink-scala2.12 (1.12.2-1) UNRELEASED; urgency=low
 
   * Initial release, beginning with Flink 1.12.2.
