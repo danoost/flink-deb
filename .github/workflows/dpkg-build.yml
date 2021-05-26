@@ -18,7 +18,7 @@ jobs:
           path: 'repo'
           
       - name: Install dependencies
-        run: apt-get -y install dpkg-dev debhelper
+        run: apt-get update && apt-get -y install dpkg-dev debhelper
           
       - name: Build package
         run: |
